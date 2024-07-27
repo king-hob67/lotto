@@ -1,0 +1,34 @@
+using Microsoft.AspNetCore.Mvc;
+
+namespace LottoGenerator.Web
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class LottoController : ControllerBase
+    {
+        [HttpPost]
+        public IActionResult GenerateCombinations([FromBody] LottoInput input)
+        {
+            var pools = new List<Pool>
+            {
+                new Pool(input.Selections1, input.MaxNumber1),
+                new Pool(input.Selections2, input.MaxNumber2)
+            };
+
+            var minBoards = GetMinBoards(pools);
+
+            var combinations = new List<string>();
+            for (int i = 0; i < minBoards; i++)
+            {
+                var board = new List<ushort>();
+                foreach (var pool in pools)
+                {
+                    pool.MoveNext();
+                    board.AddRange(pool.Current);
+                }
+                combinations.Add(string.Join(" ", board));
+                board.Clear();
+            }
+
+            return Ok(combinations);
+       
